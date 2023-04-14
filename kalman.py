@@ -13,10 +13,3 @@ def kalmanFilter(kalmanAng, kalmanInput, kalmanMeasurement, ):
     kalmanAng[1] = (1 - kalmanGain) * kalmanAng[1]                                        # new uncertainty prediction
 
     return kalmanAng
-
-def getYaw():
-    # Function for calculating the Yaw.
-    # Warning: since this is not going through the Kalman Filter the readings are not reasonable to calculate the Yaw.
-
-    global gyroYaw
-    gyroYaw = gyroYaw + DELTA_T * omegaYaw
