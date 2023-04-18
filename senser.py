@@ -50,7 +50,7 @@ class Senser():
     def get_data(self):
         """ this function send the name of the sensors to collect the data and read the bytes """
         self.serial.write(self.name)
-        line = serial.readline()
+        line = self.serial.readline()
         self.convert_data(line)
 
     def convert_data(self,line:str):
