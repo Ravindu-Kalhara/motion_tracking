@@ -21,7 +21,7 @@ class Sensor():
         initail_psi_sum = 0
         for i in range(sample_size):
             self.get_data()
-            self.calibrated_data()
+            self.calibrate()
             self.angle_calculation()
             initail_psi_sum += self.angles[2]
         self.initial_psi = initail_psi_sum/sample_size
