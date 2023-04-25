@@ -2,9 +2,8 @@ import serial
 import numpy as np
 from Essentials import Essentials
 from sensor import Sensor
-
-
-
+import time
+"""
 def convert_data(line: str):
     data = line.split(',')  # split the serial reading with the ','
     numeric_data = []
@@ -27,7 +26,7 @@ convert_data(line)
 
 
 def calibrate(self):
-    """ calibrated data value is replaced by this line """
+    
     acc_calibrated_data = self.accel_calibration_matrix[0] * (self.raw_data[0] - self.accel_calibration_matrix[1])
     gyro_calibrated_data = self.gyro_calibration_matrix[0] * (self.raw_data[1] - self.gyro_calibration_matrix[1])
     magne_calibrated_data = self.magne_calibration_matrix[0] * (self.raw_data[2] - self.magne_calibration_matrix[1])
@@ -55,31 +54,55 @@ def roll_pitch_calculation(self):
 
 
 roll_pitch_calculation(mock)
-
+"""
 
 # check part by part
 # initializing objects
-serial_port = serial.Serial(Essentials.get_comport())
+serial_port = serial.Serial(Essentials.get_comport(), 115200)
+serial_port.timeout=1
 
-acc_cali_matrix1 =[np.array([[1.013323,-0.002636,0.000692],[-0.002636,1.008997,-0.002638],[0.000692,-0.002638,1.005562]]),
-                    np.array([0.014765,0.014737,-0.037898]) ]
+
+acc_cali_matrix1 =[np.array([[1.003192, 0.002244, -0.002029],[0.002244, 1.000812, -0.002718],[-0.002029, -0.002718, 1.007279]]),
+                    np.array([0.157448, 0.181007, -0.172725])]
 
 gyro_cali_matrix1 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([-1.0,0.0,0.0])]
-magno_cali_matrix1 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([0.0,0.0,0.0])]
-sensor_1 = Sensor(b'1', serial_port, acc_cali_matrix1, gyro_cali_matrix1, magno_cali_matrix1)
 
-acc_cali_matrix2 =[np.array([[1.013323,-0.002636,0.000692],[-0.002636,1.008997,-0.002638],[0.000692,-0.002638,1.005562]]),
-                    np.array([0.014765,0.014737,-0.037898]) ]
+magno_cali_matrix1 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([0.0,0.0,0.0])]
+sensor_1 = Sensor('1', serial_port, acc_cali_matrix1, gyro_cali_matrix1, magno_cali_matrix1)
+
+
+
+acc_cali_matrix2 =[np.array([[1.010752, 0.036523, 0.001839],[0.036523, 0.996652, 0.003651],[0.001839, 0.003651, 0.985828],]),
+                    np.array([0.364060, -0.155569, -0.120483]) ]
 
 gyro_cali_matrix2 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([-1.0,0.0,0.0])]
 magno_cali_matrix2 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([0.0,0.0,0.0])]
 
-sensor_2 = Sensor(b'2', serial_port,acc_cali_matrix2, gyro_cali_matrix2, magno_cali_matrix2)
+sensor_2 = Sensor('2', serial_port,acc_cali_matrix2, gyro_cali_matrix2, magno_cali_matrix2)
 
-print(sensor_1, sensor_2)
 
+
+"""
 sensor_1.get_data()
 sensor_1.angle_calculation()
 sensor_1_angles = sensor_1.angles
 print('___________________________________________________________')
 print(sensor_1_angles)
+
+"""
+while True:
+    sensor_1.get_data()
+    sensor_1.calibrate()
+    # print(sensor_1.calibrated_data)
+    sensor_1.angle_calculation()
+
+
+    sensor_2.get_data()
+    sensor_2.calibrate()
+    sensor_2.angle_calculation()
+
+    sensor_2_angles = sensor_2.angles
+    print('***********************************************')
+
+    print(sensor_2.angles, sensor_1.angles)
+    print('***********************************************')
