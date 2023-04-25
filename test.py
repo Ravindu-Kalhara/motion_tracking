@@ -66,7 +66,7 @@ acc_cali_matrix1 =[np.array([[1.013323,-0.002636,0.000692],[-0.002636,1.008997,-
 
 gyro_cali_matrix1 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([-1.0,0.0,0.0])]
 magno_cali_matrix1 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([0.0,0.0,0.0])]
-sensor_1 = Sensor('1', serial_port, acc_cali_matrix1, gyro_cali_matrix1, magno_cali_matrix1)
+sensor_1 = Sensor(b'1', serial_port, acc_cali_matrix1, gyro_cali_matrix1, magno_cali_matrix1)
 
 acc_cali_matrix2 =[np.array([[1.013323,-0.002636,0.000692],[-0.002636,1.008997,-0.002638],[0.000692,-0.002638,1.005562]]),
                     np.array([0.014765,0.014737,-0.037898]) ]
@@ -74,6 +74,12 @@ acc_cali_matrix2 =[np.array([[1.013323,-0.002636,0.000692],[-0.002636,1.008997,-
 gyro_cali_matrix2 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([-1.0,0.0,0.0])]
 magno_cali_matrix2 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([0.0,0.0,0.0])]
 
-sensor_2 = Sensor('2', serial_port,acc_cali_matrix2, gyro_cali_matrix2, magno_cali_matrix2)
+sensor_2 = Sensor(b'2', serial_port,acc_cali_matrix2, gyro_cali_matrix2, magno_cali_matrix2)
 
 print(sensor_1, sensor_2)
+
+sensor_1.get_data()
+sensor_1.angle_calculation()
+sensor_1_angles = sensor_1.angles
+print('___________________________________________________________')
+print(sensor_1_angles)

@@ -33,7 +33,9 @@ class Sensor():
         self.serial.write(self.name)
         # read data until the end line character comes and decode bytes to str
         line = self.serial.readline().decode()
+        print('3')
         self.__convert_data(line)
+        print(line)
 
     def __convert_data(self, line: str) -> None:
         """Convert recieved data from the sensor, into 3x3 matix containg tree componets
