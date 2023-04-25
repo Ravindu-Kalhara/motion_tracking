@@ -5,7 +5,7 @@ class Essentials:
     def __init__(self) -> None:
         pass
 
-    def get_comport(self, silence=True) -> None:
+    def get_comport(silence=True) -> None:
         """ this function returns the arduino com-port """
 
         # Get a list of all available serial ports
@@ -38,7 +38,7 @@ class Essentials:
 
         return arduino_port
 
-    def kalman_filter(self, kalmanAng: list, kalmanInput: float, kalmanMeasurement: float,
+    def kalman_filter(kalmanAng: list, kalmanInput: float, kalmanMeasurement: float,
                       std_dev_gyro=8.0, std_dev_acc=2.0, delta_t=0.01) -> list:
         # 1D Kalman filter implementation
         # kalmanAngle = [angle prediction, unsertainity of prediction]

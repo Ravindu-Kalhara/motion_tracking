@@ -35,6 +35,25 @@ sensor_1.set_initial_psi(20)
 sensor_2.calibrate()
 sensor_2.set_initial_psi(20)
 
+"""*************************** prabodha's code ********************************"""
+
+
+#creating var for nodes
+larmR=bpy.data.objects['lowerarm.R']
+uarmR=bpy.data.objects['upperarm.R']
+#shoulderR=bpy.data.objects['shoulder.R']
+
+n=0
+pos=[0,0,0,0,0,0]
+offset_temp=[0,0,0]
+offset_uarmR=[0,0,0]
+iter_1=10
+byte = str.encode('g\n')
+
+
+
+"""*******************************************************************"""
+
 
 while True:
     sensor_1.get_data()
@@ -48,5 +67,41 @@ while True:
 
 
 
-""" *********************** **************************************************888"""
+#********************** **************************************************888
+    # creating var for nodes
 
+    orient =np.concatenate(sensor_1_angles, sensor_2_angles)
+
+    orient = math.pi * (orient / 180)
+
+    # Position calculation
+
+    # larmR
+    pos[0] = 1.07 * math.cos(orient[1]) * math.cos(orient[2])
+    pos[1] = 1.34 * math.cos(orient[1]) * math.sin(orient[2])
+    pos[2] = 1.07 * math.sin(orient[1])
+
+    # uarmR
+    #        pos[3]=1.34*math.cos(orient[4])*math.cos(orient[5])
+    #        pos[4]=1.34*math.cos(orient[4])*math.sin(orient[5])
+    #        pos[5]=1.34*math.sin(orient[4])
+
+    # temp uarmR readings from larmR(remove this once implemented)
+    pos[3] = 1.07 * math.cos(orient[1] * 2) * math.cos(orient[2])
+    pos[4] = 1.34 * math.cos(orient[1]) * math.sin(orient[2])
+    pos[5] = 1.07 * math.sin(orient[1] * 2)
+
+    # Roll calculation & assignment
+    larmR.rotation_euler.y = orient[0]
+    #        larmR.rotation_euler.y=(math.pi/2-math.pi*(orient[1])/180)
+    #        larmR.rotation_euler.z=0
+
+    # Position assignment
+
+    uarmR.location.x = offset_uarmR[0] = 0.561501 + pos[0]
+    uarmR.location.y = offset_uarmR[1] = pos[1]
+    uarmR.location.z = offset_uarmR[2] = 5.70503 + pos[2]
+
+    larmR.location.x = offset_uarmR[0] + pos[3]
+    larmR.location.y = offset_uarmR[1] + pos[4]
+    larmR.location.z = offset_uarmR[2] + pos[5]

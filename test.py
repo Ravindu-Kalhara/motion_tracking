@@ -1,6 +1,7 @@
-
+import serial
 import numpy as np
-
+from Essentials import Essentials
+from sensor import Sensor
 
 
 
@@ -54,3 +55,15 @@ def roll_pitch_calculation(self):
 
 
 roll_pitch_calculation(mock)
+
+
+# check part by part
+# initializing objects
+serial_port = Essentials.get_comport()
+
+acc_cali_matrix1 =[np.array([[1.013323,-0.002636,0.000692],[-0.002636,1.008997,-0.002638],[0.000692,-0.002638,1.005562]]),
+                    np.array([0.014765,0.014737,-0.037898]) ]
+
+gyro_cali_matrix1 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([-1.0,0.0,0.0])]
+magno_cali_matrix1 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([0.0,0.0,0.0])]
+sensor_1 = Sensor('1', serial.Serial(serial_port), acc_cali_matrix1, gyro_cali_matrix1, magno_cali_matrix1)
