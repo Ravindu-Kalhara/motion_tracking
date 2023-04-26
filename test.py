@@ -100,9 +100,8 @@ while True:
     sensor_2.get_data()
     sensor_2.calibrate()
     sensor_2.angle_calculation()
-
     sensor_2_angles = sensor_2.angles
-    print('***********************************************')
 
+    print('***********************************************')
     print(sensor_2.angles, sensor_1.angles)
     print('***********************************************')

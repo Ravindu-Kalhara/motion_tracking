@@ -44,10 +44,10 @@ class Essentials:
         # kalmanAngle = [angle prediction, unsertainity of prediction]
         # kalmanInput = gyro reading, kalmanMeasurement = calculated angle by the acceleration / magnetometer
 
-        kalmanAng[0] = kalmanAng[0] + delta_t * kalmanInput                     # prediction angle
-        kalmanAng[1] = kalmanAng[1] + (delta_t ** 2) * (std_dev_gyro ** 2)      # uncertainty of angle prediction
-        kalmanGain = kalmanAng[1] / (kalmanAng[1] + std_dev_acc ** 2)           # kalman gain
-        kalmanAng[0] = kalmanAng[0] + kalmanGain * (kalmanMeasurement - kalmanAng[0])   # new angle prediction
-        kalmanAng[1] = (1 - kalmanGain) * kalmanAng[1]                                  # new uncertainty prediction
+        kalmanAng[0] = kalmanAng[0] + delta_t * kalmanInput  # prediction angle
+        kalmanAng[1] = kalmanAng[1] + (delta_t ** 2) * (std_dev_gyro ** 2)  # uncertainty of angle prediction
+        kalmanGain = kalmanAng[1] / (kalmanAng[1] + std_dev_acc ** 2)  # kalman gain
+        kalmanAng[0] = kalmanAng[0] + kalmanGain * (kalmanMeasurement - kalmanAng[0])  # new angle prediction
+        kalmanAng[1] = (1 - kalmanGain) * kalmanAng[1]  # new uncertainty prediction
         return kalmanAng
-    
+

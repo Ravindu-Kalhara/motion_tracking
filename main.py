@@ -1,109 +1,120 @@
-from Essentials import Essentials
-from sensor import Sensor
-
 import bpy
 import time
 import math
 import numpy as np
 import serial
-
-# initializing objects
-serial_port = serial.Serial(Essentials.get_comport())
-serial_port.timeout = 1
+from sensor import Sensor
 
 
-acc_cali_matrix1 =[np.array([[1.003192, 0.002244, -0.002029],[0.002244, 1.000812, -0.002718],[-0.002029, -0.002718, 1.007279]]),
-                    np.array([[0.157448], [0.181007], [-0.172725]])]
+ser = serial.Serial("/dev/cu.usbmodem14201", "115200")
+x = [np.ones([3, 3]), np.ones(3)]
+sensor = Sensor('1', ser, x, x, x)
+# ser=serial.Serial("COM3","115200")
+# sensor = Sensor()
 
-gyro_cali_matrix1 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([-1.0,0.0,0.0])]
-magno_cali_matrix1 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([0.0,0.0,0.0])]
+time.sleep(3)
 
-sensor_1 = Sensor('1', serial_port, acc_cali_matrix1, gyro_cali_matrix1, magno_cali_matrix1)
+# creating var for nodes
+larmR = bpy.data.objects['lowerarm.R']
+uarmR = bpy.data.objects['upperarm.R']
+# shoulderR=bpy.data.objects['shoulder.R']
 
-
-acc_cali_matrix2 =[np.array([[1.010752, 0.036523, 0.001839],[0.036523, 0.996652, 0.003651],[0.001839, 0.003651, 0.985828],]),
-                    np.array([[0.364060], [-0.155569], [-0.120483]])]
-
-gyro_cali_matrix2 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([-1.0,0.0,0.0])]
-magno_cali_matrix2 =[np.array([[1.0,0,0],[0,1.0,0.0],[0.0,0.0,1.0]]), np.array([0.0,0.0,0.0])]
-
-sensor_2 = Sensor('2', serial_port,acc_cali_matrix2, gyro_cali_matrix2, magno_cali_matrix2)
-
-
-# calibrate objects
-sensor_1.calibrate()
-sensor_1.set_initial_psi(20)
-
-sensor_2.calibrate()
-sensor_2.set_initial_psi(20)
-
-"""*************************** prabodha's code ********************************"""
+n = 0
+pos = [0, 0, 0, 0, 0, 0]
+offset_temp = [0, 0, 0]
+offset_uarmR = [0, 0, 0]
+iter_1 = 10
+byte = str.encode('1')
 
 
-#creating var for nodes
-larmR=bpy.data.objects['lowerarm.R']
-uarmR=bpy.data.objects['upperarm.R']
-#shoulderR=bpy.data.objects['shoulder.R']
-
-n=0
-pos=[0,0,0,0,0,0]
-offset_temp=[0,0,0]
-offset_uarmR=[0,0,0]
-iter_1=10
-byte = str.encode('g\n')
+def get_angles(orient: np.array) -> np.array:
+    phi = np.arctan2(orient[1], orient[2])
+    theta = np.arctan(-orient[0] / (orient[1] * np.sin(phi) + orient[2] * np.cos(phi)))
+    part1 = -np.cos(phi) * orient[7] + np.sin(phi) * orient[8]
+    part2 = np.cos(theta) * orient[6] + np.sin(theta) * np.sin(phi) * orient[7] + np.sin(theta) * np.cos(phi) * orient[
+        8]
+    psi = np.arctan2(part1, part2)
+    return np.array([phi, theta, psi])
 
 
+# main loop
 
-"""*******************************************************************"""
+for _ in range(20):
+    ser.write(byte)
+    orient = ser.readline()
+    time.sleep(0.01)
+    sensor.get_data()
+    time.sleep(0.01)
+    # if orient=="":
+    #    break
 
+    orient = orient.decode().strip().split(',')
+    if orient != "" and len(orient) == 9:
+        orient = sensor.get_data()
+        orient = sensor.calibrate()
+        orient = sensor.angle_calculation(orient)
+        # orient = np.array(sensor.calibrated_data).reshape(9)
+        # orient=np.array(list(map(float, orient)))
+        # orient=get_angles(orient)
+        #       print(orient)
+        #       larm.rotation_euler.x=(math.pi/2-math.pi*(orient[0])/180)
+        #       larm.rotation_euler.y=(math.pi/2-math.pi*(orient[1])/180)
+        #       larm.rotation_euler.z=0
+        # orient[2]=0
 
-while True:
-    sensor_1.get_data()
-    sensor_1.angle_calculation()
-    sensor_1_angles = sensor_1.angles
+        # DEG to RAD
+        # orient=math.pi*(orient/180)
 
+        # orient[0]=roll=x
+        # orient[1]=pitch=y
+        # orient[2]=yaw=z
 
-    sensor_2.get_data()
-    sensor_2.angle_calculation()
-    sensor_2_angles = sensor_2.angles
+        # Position calculation
 
+        # larmR
+        pos[0] = 1.07 * math.cos(orient[1]) * math.cos(orient[2])
+        pos[1] = 1.34 * math.cos(orient[1]) * math.sin(orient[2])
+        pos[2] = 1.07 * math.sin(orient[1])
 
+        # uarmR
+        #        pos[3]=1.34*math.cos(orient[4])*math.cos(orient[5])
+        #        pos[4]=1.34*math.cos(orient[4])*math.sin(orient[5])
+        #        pos[5]=1.34*math.sin(orient[4])
 
-#********************** **************************************************888
-    # creating var for nodes
+        pos[3] = 1.07 * math.cos(orient[1] * 2) * math.cos(orient[2])
+        pos[4] = 1.34 * math.cos(orient[1]) * math.sin(orient[2])
+        pos[5] = 1.07 * math.sin(orient[1] * 2)
 
-    orient =np.concatenate(sensor_1_angles, sensor_2_angles)
+        # Roll calculation & assignment
+        larmR.rotation_euler.y = orient[0]
+        #        larmR.rotation_euler.y=(math.pi/2-math.pi*(orient[1])/180)
+        #        larmR.rotation_euler.z=0
 
-    orient = math.pi * (orient / 180)
+        # Position assignment
 
-    # Position calculation
+        uarmR.location.x = offset_uarmR[0] = 0.561501 + pos[0]
+        uarmR.location.y = offset_uarmR[1] = pos[1]
+        uarmR.location.z = offset_uarmR[2] = 5.70503 + pos[2]
 
-    # larmR
-    pos[0] = 1.07 * math.cos(orient[1]) * math.cos(orient[2])
-    pos[1] = 1.34 * math.cos(orient[1]) * math.sin(orient[2])
-    pos[2] = 1.07 * math.sin(orient[1])
+        larmR.location.x = offset_uarmR[0] + pos[3]
+        larmR.location.y = offset_uarmR[1] + pos[4]
+        larmR.location.z = offset_uarmR[2] + pos[5]
 
-    # uarmR
-    #        pos[3]=1.34*math.cos(orient[4])*math.cos(orient[5])
-    #        pos[4]=1.34*math.cos(orient[4])*math.sin(orient[5])
-    #        pos[5]=1.34*math.sin(orient[4])
+        file = open("/Users/prabodaratnayake/Desktop/motion_track/animation.txt", "a")
+        file.write(str(larmR.location.x) + "," + str(larmR.location.y) + "," + str(larmR.location.z) + "\n")
+        file.close()
 
-    # temp uarmR readings from larmR(remove this once implemented)
-    pos[3] = 1.07 * math.cos(orient[1] * 2) * math.cos(orient[2])
-    pos[4] = 1.34 * math.cos(orient[1]) * math.sin(orient[2])
-    pos[5] = 1.07 * math.sin(orient[1] * 2)
+    time.sleep(1 / 30)
+    bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
 
-    # Roll calculation & assignment
-    larmR.rotation_euler.y = orient[0]
-    #        larmR.rotation_euler.y=(math.pi/2-math.pi*(orient[1])/180)
-    #        larmR.rotation_euler.z=0
+ser.close()
 
-    # Position assignment
-
-    uarmR.location.x = offset_uarmR[0] = 0.561501 + pos[0]
-    uarmR.location.y = offset_uarmR[1] = pos[1]
-    uarmR.location.z = offset_uarmR[2] = 5.70503 + pos[2]
-
-    larmR.location.x = offset_uarmR[0] + pos[3]
-    larmR.location.y = offset_uarmR[1] + pos[4]
-    larmR.location.z = offset_uarmR[2] + pos[5]
+# while n==True:larm=
+#       
+#    #larm.location.x=x_displacment
+#    #larm.location.y=y_displacment
+#    #larm.location.z=z_displacment
+#    
+#    larm.rotation_euler.x=(math.pi*ax/180)
+#    larm.rotation_euler.y=(math.pi*ay/180)
+#    larm.rotation_euler.z=(math.pi*az/180)
