@@ -27,10 +27,10 @@ class Sensor():
         self.magne_calibration_matrix = _magne_calibration_matrix
         self.initial_psi = 0
 
-    def set_initial_psi(self, sample_size: int) -> None:
+    def set_initial_psi(self, sample_size=10) -> None:
         """Get the initial yaw rotaion. Acoording to the 'sample_size', take that number 
         readings and get mean of those readings, take that as the initial yaw position."""
-
+        logger.info("inside the set_initial_psi function ")
         initail_psi_sum = 0
         for i in range(sample_size):
             self.get_data()
@@ -38,63 +38,98 @@ class Sensor():
             self.angle_calculation()
             initail_psi_sum += self.angles[2]
         self.initial_psi = initail_psi_sum/sample_size
+        logger.debug(f" self.initial_psi = {self.initial_psi} ")
+
+
 
     def get_data(self) -> None:
         """This function send the name of the sensors to Arduino and collect the data
         from that sensor through the Serial communication."""
-
-
         # read data until the end line character comes and decode bytes to str
-        try:
-            self.serial.write(b'1')
-            line = self.serial.readline().decode()
 
-            print(line)
+
+        try:
+            self.serial.write(self.name)
+            logger.debug(f"send the message to the arduino {self.name} -- {type(self.name)}")
+            line = self.serial.readline().decode()
+            logger.debug(f"read the message from arduino {line} -- {type(line)}")
+
         except Exception as e:
             logger.error(e)
             line=''
+        logger.debug(f"final message after handling the exception {line} -- {type(line)}")
         self.__convert_data(line)
+
 
     def __convert_data(self, line: str) -> None:
         """Convert recieved data from the sensor, into 3x3 matix containg tree componets
         of each gravitaional acceleration, angular velocity around three axis and geomagnetic
         field strenght."""
-        print(type(line))
+
+        logger.info('inside convert_data function')
         data = line.strip().split(',')  # split the serial reading with the ','
+        logger.debug(f" data = {data} -- {type(data)}")
         numeric_data = []
         for i in data:
             try:
                 numeric_data.append(float(i))
-            except:
-                pass
+            except Exception as e:
+                logger.error(e)
+        logger.debug(f"data after conversion = {numeric_data}")
+
         if len(numeric_data) == 9:  # check the data has numbers
+            logger.debug(" data is in the write format")
             # set the readings to raw data format
             self.raw_data = np.array(numeric_data).reshape(3, 3)
+            logger.debug(f" self.raw data = {self.raw_data} -- {type(self.raw_data)} shape -- {self.raw_data.shape}")
+
         else:
             print("*********** Wrong data type ***********")
+            logger.error(f"data is not in the write format {numeric_data}")
 
     def calibrate(self) -> None:
         """Calibrate the raw data according to pre-defines calibration matrix."""
-
+        logger.info("inside calibration function")
         acc_calibrated_data = np.matmul(self.accel_calibration_matrix[0], self.raw_data[0] - self.accel_calibration_matrix[1])
+        logger.debug(f"accelarometer calibrated data =  {acc_calibrated_data} -- {type(acc_calibrated_data)} --- {acc_calibrated_data.shape}")
+
+
         gyro_calibrated_data = np.matmul(self.gyro_calibration_matrix[0], self.raw_data[1] - self.gyro_calibration_matrix[1])
+        logger.debug(
+            f"gyro_calibrated_data =  {gyro_calibrated_data} -- {type(gyro_calibrated_data)} --- {gyro_calibrated_data.shape}")
+
+
         magne_calibrated_data = np.matmul(self.magne_calibration_matrix[0], self.raw_data[2] - self.magne_calibration_matrix[1])
+        logger.debug(
+            f"gyro_calibrated_data =  {magne_calibrated_data} -- {type(magne_calibrated_data)} --- {magne_calibrated_data.shape}")
+
         self.calibrated_data = [acc_calibrated_data, gyro_calibrated_data, magne_calibrated_data]
+        logger.debug(f"self.calibrated_data = {self.calibrated_data} -- {type(self.calibrated_data)}")
 
     def angle_calculation(self) -> None:
         """Calculate roll, pitch and yaw from calibrated data."""
+        logger.info("inside angle_calculation function")
 
         phi = np.arctan2(self.calibrated_data[0][1], self.calibrated_data[0][2])
+        logger.debug(f"phi angel = {phi} -- {type(phi)}")
+
         theta = np.arctan([self.calibrated_data[0][0]/self.calibrated_data[0][1]*np.sin(phi) + self.calibrated_data[0][2]*np.cos(phi)])
+        logger.debug(f"theta angel = {theta} -- {type(theta)}")
+
         part1 = -np.cos(phi)*self.calibrated_data[2][1] + np.sin(phi)*self.calibrated_data[2][2]
         part2 = -np.cos(theta)*self.calibrated_data[2][0] + np.sin(phi)*np.sin(theta)*self.calibrated_data[2][1] + np.sin(theta)*np.sin(phi)*self.calibrated_data[2][2]
         psi = np.arctan2(part1, part2) - self.initial_psi
+        logger.debug(f"self.initial_psi = {self.initial_psi} --{type(self.initial_psi)}")
+        logger.debug(f"psi angel = {psi} -- {type(psi)}")
+
 
         try:
             # print('---------------------------------------------------')
             # print(self.calibrated_data[0][1])
             self.angles = np.array([phi, theta[0], psi[0]])
-        except ValueError:
+            logger.debug(f"self.angles = {self.angles} -- {type(self.angles)} ")
+        except ValueError as e:
             self.angles = np.array([0, 0, 0])
+            logger.error(e)
 
         # print('---------------------------------------------------')

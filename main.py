@@ -9,6 +9,7 @@ import serial
 
 # initializing objects
 serial_port = serial.Serial(Essentials.get_comport())
+serial_port.timeout = 1
 
 
 acc_cali_matrix1 =[np.array([[1.003192, 0.002244, -0.002029],[0.002244, 1.000812, -0.002718],[-0.002029, -0.002718, 1.007279]]),
