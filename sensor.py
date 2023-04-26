@@ -1,5 +1,11 @@
 import numpy as np
 import serial
+import logging
+# Create and configure logger
+logging.basicConfig(filename="sensorfile.log",
+                    format='%(asctime)s %(message)s',
+                    filemode='w')
+
 
 
 class Sensor():
@@ -39,14 +45,14 @@ class Sensor():
             print(line)
         except:
             print('something went wrong')
-            line=[0]
+            line=''
         self.__convert_data(line)
 
     def __convert_data(self, line: str) -> None:
         """Convert recieved data from the sensor, into 3x3 matix containg tree componets
         of each gravitaional acceleration, angular velocity around three axis and geomagnetic
         field strenght."""
-
+        print(type(line))
         data = line.strip().split(',')  # split the serial reading with the ','
         numeric_data = []
         for i in data:
