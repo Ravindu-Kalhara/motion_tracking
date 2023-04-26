@@ -1,10 +1,17 @@
 import numpy as np
 import serial
 import logging
+
 # Create and configure logger
 logging.basicConfig(filename="sensorfile.log",
                     format='%(asctime)s %(message)s',
                     filemode='w')
+
+# Creating an object
+logger = logging.getLogger()
+
+# Setting the threshold of logger to DEBUG
+logger.setLevel(logging.DEBUG)
 
 
 
@@ -43,8 +50,8 @@ class Sensor():
             line = self.serial.readline().decode()
 
             print(line)
-        except:
-            print('something went wrong')
+        except Exception as e:
+            logger.error(e)
             line=''
         self.__convert_data(line)
 
