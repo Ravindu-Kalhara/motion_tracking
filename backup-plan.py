@@ -1,8 +1,5 @@
-
+import serial
 import numpy as np
-
-
-
 
 def angle_calculation(data):
     """Calculate roll, pitch and yaw from calibrated data.
@@ -20,5 +17,23 @@ def angle_calculation(data):
     psi = np.arctan2(part1, part2)
     return [phi,theta, psi]
 
+ser = serial.Serial('COM8')
 
+##################################################################
+
+line = ser.readline().strip().decode()
+
+data = line.split(',')
+
+numeric_data = []
+for i in data:
+    try:
+        numeric_data.append(float(i))
+    except Exception as e:
+        pass
+
+
+numeric_data_nested =[numeric_data[:3],numeric_data[3:6], numeric_data[6:]]
+angles=angle_calculation(numeric_data_nested)
+print(angles)
 
