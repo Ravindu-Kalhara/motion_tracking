@@ -76,7 +76,7 @@ class Sensor():
         theta = np.arctan(-orient[0] / (orient[1] * np.sin(phi) + orient[2] * np.cos(phi)))
         part1 = -np.cos(phi) * orient[7] + np.sin(phi) * orient[8]
         part2 = np.cos(theta) * orient[6] + np.sin(theta) * np.sin(phi) * orient[7] + np.sin(theta) * np.cos(phi) * \
-                orient[8]
+            orient[8]
         psi = np.arctan2(part1, part2)
         self.angles = np.array([phi, theta, psi])
         return self.angles
