@@ -49,4 +49,3 @@ class Essentials:
         kalmanAng[0] = kalmanAng[0] + kalmanGain * (kalmanMeasurement - kalmanAng[0])  # new angle prediction
         kalmanAng[1] = (1 - kalmanGain) * kalmanAng[1]  # new uncertainty prediction
         return kalmanAng
-
