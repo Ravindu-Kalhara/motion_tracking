@@ -3,7 +3,7 @@ import time
 import math
 import numpy as np
 import serial
-from sensor import Sensor
+from Sensor import Sensor
 
 
 ser = serial.Serial("/dev/cu.usbmodem14201", "115200")
